@@ -3,13 +3,12 @@ import PortfolioEditForm from '@/components/admin/PortfolioEditForm';
 import { notFound } from 'next/navigation';
 
 interface Props {
-  params: {
-    id: string;
-  };
+  params: Promise<{ id: string }>;
 }
 
 export default async function EditPortfolioPage({ params }: Props) {
-  const portfolioId = Number(params.id);
+  const { id } = await params;
+  const portfolioId = Number(id);
   
   if (isNaN(portfolioId)) {
     notFound();

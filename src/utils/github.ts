@@ -20,7 +20,8 @@ export async function getReadmeContent(url: string) {
       },
     });
 
-    return response.data as string;
+    // response.data를 unknown으로 변환 후 string으로 변환
+    return response.data as unknown as string;
   } catch (error) {
     console.error('Failed to fetch README:', error);
     return null;

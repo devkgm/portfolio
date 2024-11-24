@@ -1,13 +1,12 @@
-import type { Config } from "drizzle-kit";
+// import type { Config } from "drizzle-kit";
 
-export default {
+const config: any = {
   schema: "./src/db/schema.ts",
-  dialect: "sqlite",
-  driver: "d1-http",
+  out: "./drizzle",
+  driver: "better-sqlite3",
   dbCredentials: {
-    url: "./sqlite.db",
-    accountId: "devkgm",
-    databaseId: "portfolio",
-    token: "f03b06d0-0000-0000-0000-000000000000",
+    url: "sqlite.db",
   },
-} satisfies Config; 
+};
+
+export default config; 

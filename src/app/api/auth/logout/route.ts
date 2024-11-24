@@ -1,9 +1,14 @@
-import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 
 export async function POST() {
-  const cookieStore = cookies();
-  cookieStore.delete('admin_token');
+  const response = NextResponse.json({ success: true });
+  response.cookies.set('admin_token', '', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 0, // 즉시 만료
+    path: '/',
+  });
   
-  return NextResponse.json({ success: true });
+  return response;
 } 

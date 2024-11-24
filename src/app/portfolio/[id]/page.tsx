@@ -8,9 +8,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 
 interface Props {
-  params: {
-    id: string;
-  };
+  params: Promise<{ id: string }>;
 }
 
 interface Portfolio {
@@ -39,7 +37,8 @@ export default function PortfolioDetailPage({ params }: Props) {
 
     const loadPortfolio = async () => {
       try {
-        const response = await fetch(`/api/portfolios/${params.id}`);
+        const { id } = await params;
+        const response = await fetch(`/api/portfolios/${id}`);
         if (!response.ok) {
           notFound();
         }
@@ -56,7 +55,7 @@ export default function PortfolioDetailPage({ params }: Props) {
 
     checkLoginStatus();
     loadPortfolio();
-  }, [params.id]);
+  }, [params]);
 
   const handleDelete = async () => {
     if (!portfolio || !confirm('정말 삭제하시겠습니까?')) return;

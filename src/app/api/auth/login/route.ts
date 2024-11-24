@@ -21,7 +21,7 @@ export async function POST(request: Request) {
       { error: 'Invalid password' },
       { status: 401 }
     );
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

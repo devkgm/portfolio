@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { getGitHubUser } from '@/utils/github';
+import Image from 'next/image';
 
 export default function Profile() {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
@@ -10,6 +11,7 @@ export default function Profile() {
     const fetchGitHubUser = async () => {
       const user = await getGitHubUser('devkgm'); // GitHub 사용자 이름
       if (user) {
+        console.log(user);
         setAvatarUrl(user.avatar_url);
       }
     };
@@ -22,11 +24,15 @@ export default function Profile() {
       <div className="absolute inset-0 bg-gradient-to-r from-violet-100/50 to-blue-100/50" />
       <div className="relative flex flex-col md:flex-row items-center gap-6 md:gap-8">
         <div className="h-24 w-24 md:h-32 md:w-32 overflow-hidden rounded-2xl shadow-lg">
-          <img
-            src={avatarUrl || '/profile-placeholder.jpg'}
-            alt="프로필 이미지"
-            className="h-full w-full object-cover transition-transform hover:scale-110"
-          />
+          {avatarUrl && (
+            <Image
+              src={avatarUrl}
+              alt="프로필 이미지"
+              width={128}
+              height={128}
+              className="h-full w-full object-cover transition-transform hover:scale-110"
+            />
+          )}
         </div>
         <div className="text-center md:text-left">
           <h1 className="mb-4 text-2xl md:text-3xl font-bold text-gray-900">
