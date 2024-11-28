@@ -35,7 +35,6 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // 정적 파일과 로깅 API를 제외한 모든 경로
-    '/((?!_next/static|_next/image|favicon.ico|public|uploads|api/log).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico).*)',
   ],
 }; 
