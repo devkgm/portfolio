@@ -1,15 +1,15 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { getGitHubUser } from '@/utils/github';
-import Image from 'next/image';
+import { useEffect, useState } from "react";
+import { getGitHubUser } from "@/utils/github";
+import Image from "next/image";
 
 export default function Profile() {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchGitHubUser = async () => {
-      const user = await getGitHubUser('devkgm'); // GitHub 사용자 이름
+      const user = await getGitHubUser("devkgm"); // GitHub 사용자 이름
       if (user) {
         console.log(user);
         setAvatarUrl(user.avatar_url);
@@ -42,15 +42,14 @@ export default function Profile() {
             </span>
           </h1>
           <p className="text-base md:text-lg font-medium leading-relaxed text-gray-700">
-            안녕하세요 👋 <br/>
+            안녕하세요 👋 <br />
             <span className="animate-pulse bg-gradient-to-r from-violet-600 to-blue-600 bg-clip-text text-transparent">
-              좋은 제품을 빌드하는게 즐거운 개발자
+              좋은 제품을 빌드하고 싶은 개발자
             </span>{" "}
-            <b>김경모</b>입니다. <br/>
-            추구하는 개발 🎯목표는 사용자 경험 개선🔥
+            <b>김경모</b>입니다. <br />
           </p>
         </div>
       </div>
     </div>
   );
-} 
+}
