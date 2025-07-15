@@ -1,36 +1,24 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState } from "react";
+import { signIn } from "next-auth/react";
 
 export default function LoginPage() {
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setError('');
+    setError("");
 
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ password }),
+      signIn("credentials", {
+        password,
       });
-
-      if (response.ok) {
-        router.push('/');
-        router.refresh();
-      } else {
-        setError('비밀번호가 일치하지 않습니다.');
-      }
     } catch {
-      setError('로그인 중 오류가 발생했습니다.');
+      setError("로그인 중 오류가 발생했습니다.");
     } finally {
       setIsLoading(false);
     }
@@ -42,7 +30,10 @@ export default function LoginPage() {
         <h1 className="mb-6 text-2xl font-bold text-gray-900">관리자 로그인</h1>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-900">
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-gray-900"
+            >
               비밀번호
             </label>
             <input
@@ -60,10 +51,10 @@ export default function LoginPage() {
             disabled={isLoading}
             className="w-full rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-blue-300"
           >
-            {isLoading ? '로그인 중...' : '로그인'}
+            {isLoading ? "로그인 중..." : "로그인"}
           </button>
         </form>
       </div>
     </div>
   );
-} 
+}

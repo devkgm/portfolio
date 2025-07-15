@@ -1,11 +1,12 @@
-'use client';
+"use client";
 
-import { getReadmeContent } from '@/utils/github';
-import ReactMarkdown from 'react-markdown';
-import rehypeRaw from 'rehype-raw';
-import { notFound, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import Link from 'next/link';
+import { getReadmeContent } from "@/utils/github";
+import ReactMarkdown from "react-markdown";
+import rehypeRaw from "rehype-raw";
+import { notFound, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useSession } from "next-auth/react";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -21,20 +22,12 @@ interface Portfolio {
 }
 
 export default function PortfolioDetailPage({ params }: Props) {
+  const { data: session, status } = useSession();
   const router = useRouter();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [portfolio, setPortfolio] = useState<Portfolio | null>(null);
   const [readmeContent, setReadmeContent] = useState<string | null>(null);
 
   useEffect(() => {
-    const checkLoginStatus = () => {
-      const cookies = document.cookie.split(';');
-      const hasAdminToken = cookies.some(cookie => 
-        cookie.trim().startsWith('admin_token=true')
-      );
-      setIsLoggedIn(hasAdminToken);
-    };
-
     const loadPortfolio = async () => {
       try {
         const { id } = await params;
@@ -44,36 +37,34 @@ export default function PortfolioDetailPage({ params }: Props) {
         }
         const data = await response.json();
         setPortfolio(data);
-        
+
         const content = await getReadmeContent(data.githubUrl);
         setReadmeContent(content);
       } catch (error) {
-        console.error('Failed to load portfolio:', error);
+        console.error("Failed to load portfolio:", error);
         notFound();
       }
     };
-
-    checkLoginStatus();
     loadPortfolio();
   }, [params]);
 
   const handleDelete = async () => {
-    if (!portfolio || !confirm('정말 삭제하시겠습니까?')) return;
+    if (!portfolio || !confirm("정말 삭제하시겠습니까?")) return;
 
     try {
       const response = await fetch(`/api/portfolios/${portfolio.id}`, {
-        method: 'DELETE',
+        method: "DELETE",
       });
 
       if (response.ok) {
-        router.push('/');
+        router.push("/");
         router.refresh();
       } else {
-        throw new Error('Failed to delete portfolio');
+        throw new Error("Failed to delete portfolio");
       }
     } catch (error) {
-      console.error('Delete error:', error);
-      alert('삭제에 실패했습니다.');
+      console.error("Delete error:", error);
+      alert("삭제에 실패했습니다.");
     }
   };
 
@@ -90,8 +81,10 @@ export default function PortfolioDetailPage({ params }: Props) {
           />
         </div>
         <div className="flex justify-between items-center mb-4">
-          <h1 className="text-3xl font-bold text-gray-900">{portfolio.title}</h1>
-          {isLoggedIn && (
+          <h1 className="text-3xl font-bold text-gray-900">
+            {portfolio.title}
+          </h1>
+          {status == "authenticated" && (
             <div className="flex gap-4">
               <Link
                 href={`/admin/edit/${portfolio.id}`}
@@ -108,7 +101,9 @@ export default function PortfolioDetailPage({ params }: Props) {
             </div>
           )}
         </div>
-        <p className="mb-4 text-base font-medium text-gray-700">{portfolio.description}</p>
+        <p className="mb-4 text-base font-medium text-gray-700">
+          {portfolio.description}
+        </p>
         <div className="mb-6 flex flex-wrap gap-2">
           {JSON.parse(portfolio.tags).map((tag: string, index: number) => (
             <span
@@ -131,14 +126,18 @@ export default function PortfolioDetailPage({ params }: Props) {
           GitHub 방문
         </a>
       </div>
-      
+
       <div className="prose max-w-none rounded-lg bg-white p-8 shadow-lg">
         {readmeContent ? (
-          <ReactMarkdown rehypePlugins={[rehypeRaw]}>{readmeContent}</ReactMarkdown>
+          <ReactMarkdown rehypePlugins={[rehypeRaw]}>
+            {readmeContent}
+          </ReactMarkdown>
         ) : (
-          <p className="text-base font-medium text-gray-700">README.md를 불러올 수 없습니다.</p>
+          <p className="text-base font-medium text-gray-700">
+            README.md를 불러올 수 없습니다.
+          </p>
         )}
       </div>
     </div>
   );
-} 
+}
