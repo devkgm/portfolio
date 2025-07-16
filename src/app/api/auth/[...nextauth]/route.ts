@@ -9,8 +9,7 @@ const handler = NextAuth({
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        console.log(credentials);
-        if (credentials?.password === "1234") {
+        if (credentials?.password === process.env.ADMIN_PASSWORD) {
           return { id: "admin" };
         }
 

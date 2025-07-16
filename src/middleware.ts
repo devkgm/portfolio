@@ -23,14 +23,22 @@ export async function middleware(request: NextRequest) {
     body: JSON.stringify(logData),
   }).catch(console.error);
 
-  // 관리자 페이지 접근 제어
+  // 관리자 페이지 및 API 접근 제어
   const isAdminPage = request.nextUrl.pathname.startsWith("/admin");
+  const isApi = request.nextUrl.pathname.startsWith("/api");
+
+  const isApiWrite =
+    isApi &&
+    (request.method === "POST" ||
+      request.method === "PUT" ||
+      request.method === "PATCH" ||
+      request.method === "DELETE");
+
   const token = await getToken({
     req: request,
     secret: process.env.NEXTAUTH_SECRET,
   });
-
-  if (isAdminPage && !token) {
+  if ((isAdminPage || isApiWrite) && !token) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
@@ -38,5 +46,7 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|upload|log|favicon.ico).*)"],
+  matcher: [
+    "/((?!_next/static|_next/image|upload|api/log|api/auth|favicon.ico).*)",
+  ],
 };
