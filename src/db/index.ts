@@ -1,22 +1,8 @@
-import Database from 'better-sqlite3';
-import path from 'path';
+import { createClient } from "@supabase/supabase-js";
 
-const dbPath = path.join(process.cwd(), 'portfolio.db');
-const db = new Database(dbPath);
-
-// 테이블 생성
-db.exec(`
-  CREATE TABLE IF NOT EXISTS portfolios (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    title TEXT NOT NULL,
-    description TEXT NOT NULL,
-    githubUrl TEXT NOT NULL,
-    thumbnail TEXT NOT NULL,
-    tags TEXT NOT NULL,
-    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
-  )
-`);
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+export const supabase = createClient(supabaseUrl, supabaseKey);
 
 export interface Portfolio {
   id: number;
@@ -30,38 +16,49 @@ export interface Portfolio {
 }
 
 export const portfolioDb = {
-  create: (data: Omit<Portfolio, 'id' | 'createdAt' | 'updatedAt'>) => {
-    const stmt = db.prepare(`
-      INSERT INTO portfolios (title, description, githubUrl, thumbnail, tags)
-      VALUES (@title, @description, @githubUrl, @thumbnail, @tags)
-    `);
-    return stmt.run(data);
+  create: async (data: Omit<Portfolio, "id" | "createdAt" | "updatedAt">) => {
+    const { data: result, error } = await supabase
+      .from("portfolios")
+      .insert([{ ...data }])
+      .select()
+      .single();
+    if (error) throw error;
+    return result;
   },
 
-  getAll: () => {
-    const stmt = db.prepare('SELECT * FROM portfolios ORDER BY createdAt DESC');
-    return stmt.all() as Portfolio[];
+  getAll: async () => {
+    const { data, error } = await supabase
+      .from("portfolios")
+      .select("*")
+      .order("createdAt", { ascending: false });
+    if (error) throw error;
+    return data as Portfolio[];
   },
 
-  getById: (id: number) => {
-    const stmt = db.prepare('SELECT * FROM portfolios WHERE id = ?');
-    return stmt.get(id) as Portfolio;
+  getById: async (id: number) => {
+    const { data, error } = await supabase
+      .from("portfolios")
+      .select("*")
+      .eq("id", id)
+      .single();
+    if (error) throw error;
+    return data as Portfolio;
   },
 
-  update: (id: number, data: Partial<Portfolio>) => {
-    const sets = Object.keys(data)
-      .map(key => `${key} = @${key}`)
-      .join(', ');
-    const stmt = db.prepare(`
-      UPDATE portfolios 
-      SET ${sets}, updatedAt = CURRENT_TIMESTAMP
-      WHERE id = @id
-    `);
-    return stmt.run({ ...data, id });
+  update: async (id: number, data: Partial<Portfolio>) => {
+    const { data: result, error } = await supabase
+      .from("portfolios")
+      .update({ ...data, updatedAt: new Date().toISOString() })
+      .eq("id", id)
+      .select()
+      .single();
+    if (error) throw error;
+    return result;
   },
 
-  delete: (id: number) => {
-    const stmt = db.prepare('DELETE FROM portfolios WHERE id = ?');
-    return stmt.run(id);
-  }
-}; 
+  delete: async (id: number) => {
+    const { error } = await supabase.from("portfolios").delete().eq("id", id);
+    if (error) throw error;
+    return { success: true };
+  },
+};

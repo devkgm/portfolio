@@ -12,7 +12,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
     }
 
-    const portfolio = portfolioDb.getById(portfolioId);
+    const portfolio = await portfolioDb.getById(portfolioId);
     if (!portfolio) {
       return NextResponse.json(
         { error: "Portfolio not found" },
@@ -41,19 +41,16 @@ export async function PUT(request: Request) {
     }
 
     const data = await request.json();
-
     // 이미지 저장
     const thumbnailPath = await saveImage(data.thumbnail);
-
     // 데이터베이스에 저장
-    const result = portfolioDb.update(portfolioId, {
+    const result = await portfolioDb.update(portfolioId, {
       title: data.title,
       description: data.description,
       githubUrl: data.githubUrl,
       thumbnail: thumbnailPath,
       tags: JSON.stringify(data.tags),
     });
-
     return NextResponse.json({ success: true, data: result });
   } catch (error) {
     console.error("Portfolio update error:", error);
@@ -74,14 +71,13 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
     }
 
-    const result = portfolioDb.delete(portfolioId);
-    if (result.changes === 0) {
+    const result = await portfolioDb.delete(portfolioId);
+    if (!result.success) {
       return NextResponse.json(
         { error: "Portfolio not found" },
         { status: 404 }
       );
     }
-
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Portfolio delete error:", error);

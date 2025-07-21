@@ -1,8 +1,8 @@
-import { portfolioDb } from '@/db';
-import PortfolioCard from './PortfolioCard';
+import { portfolioDb } from "@/db";
+import PortfolioCard from "./PortfolioCard";
 
 export default async function PortfolioList() {
-  const items = portfolioDb.getAll();
+  const items = await portfolioDb.getAll();
 
   return (
     <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -18,4 +18,4 @@ export default async function PortfolioList() {
       ))}
     </div>
   );
-} 
+}
