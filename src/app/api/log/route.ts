@@ -1,27 +1,34 @@
-import fs from 'fs';
-import path from 'path';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from "next/server";
+import { supabase } from "@/utils/supabase";
+import { AccessLog } from "@/types/log";
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
-    const logData = await request.json();
-    const logDir = path.join(process.cwd(), 'logs');
-    const logFile = path.join(logDir, `access_${new Date().toISOString().split('T')[0]}.log`);
+    const logData = (await request.json()) as AccessLog;
 
-    if (!fs.existsSync(logDir)) {
-      fs.mkdirSync(logDir, { recursive: true });
+    const { error } = await supabase.from("access_logs").insert([
+      {
+        path: logData.path,
+        ip: logData.ip,
+        geo: logData.geo,
+        user_agent: logData.userAgent,
+      },
+    ]);
+
+    if (error) {
+      console.error("Failed to insert access log into Supabase:", error);
+      return NextResponse.json(
+        { error: "Failed to save access log" },
+        { status: 500 }
+      );
     }
 
-    const logEntry = JSON.stringify({
-      ...logData,
-      timestamp: new Date().toISOString(),
-    }) + '\n';
-
-    fs.appendFileSync(logFile, logEntry);
-    
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {
-    console.error('Logging error:', error);
-    return NextResponse.json({ success: false }, { status: 500 });
+    console.error("Error in /api/log/access:", error);
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 }
+    );
   }
-} 
+}

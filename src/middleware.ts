@@ -1,52 +1,48 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+import { NextRequest, NextResponse, userAgent } from "next/server";
 import { getToken } from "next-auth/jwt";
+import { AccessLog } from "./types/log";
 
 export async function middleware(request: NextRequest) {
-  // 로깅 데이터 수집
-  const logData = {
-    timestamp: new Date().toISOString(),
-    url: request.nextUrl.toString(),
-    method: request.method,
-    ip: request.headers.get("x-forwarded-for") ?? "unknown",
-    userAgent: request.headers.get("user-agent") ?? "unknown",
-    referer: request.headers.get("referer"),
-    path: request.nextUrl.pathname,
+  const { nextUrl } = request;
+
+  const ip = request.headers.get("x-forwarded-for")?.split(",").shift();
+
+  const geo = {
+    city: request.headers.get("x-vercel-ip-city") || undefined,
+    country: request.headers.get("x-vercel-ip-country") || undefined,
+    region: request.headers.get("x-vercel-ip-country-region") || undefined,
   };
+  const { device, os, browser, isBot } = userAgent(request);
 
-  // 로깅 API에 데이터 전송
-  fetch(`${request.nextUrl.origin}/api/log`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(logData),
-  }).catch(console.error);
+  if (!isBot) {
+    fetch(`${nextUrl.origin}/api/log`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        path: nextUrl.pathname,
+        ip,
+        geo,
+        userAgent: JSON.stringify({ device, os, browser }),
+      } as AccessLog),
+    });
+  }
 
-  // 관리자 페이지 및 API 접근 제어
-  const isAdminPage = request.nextUrl.pathname.startsWith("/admin");
-  const isApi = request.nextUrl.pathname.startsWith("/api");
-
-  const isApiWrite =
-    isApi &&
-    (request.method === "POST" ||
-      request.method === "PUT" ||
-      request.method === "PATCH" ||
-      request.method === "DELETE");
-
+  // 인증 및 권한 확인 로직
   const token = await getToken({
     req: request,
     secret: process.env.NEXTAUTH_SECRET,
   });
-  if ((isAdminPage || isApiWrite) && !token) {
-    return NextResponse.redirect(new URL("/login", request.url));
+  const isAdminPath = nextUrl.pathname.startsWith("/admin");
+
+  if (isAdminPath) {
+    if (!token || token.sub !== "admin") {
+      return NextResponse.redirect(new URL("/login", request.url));
+    }
   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: [
-    "/((?!_next/static|_next/image|upload|api/log|api/auth|favicon.ico).*)",
-  ],
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
 };
