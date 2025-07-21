@@ -1,6 +1,6 @@
-import { portfolioDb } from '@/db';
-import PortfolioEditForm from '@/components/admin/PortfolioEditForm';
-import { notFound } from 'next/navigation';
+import { portfolioDb } from "@/db";
+import PortfolioEditForm from "@/components/admin/PortfolioEditForm";
+import { notFound } from "next/navigation";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -9,13 +9,13 @@ interface Props {
 export default async function EditPortfolioPage({ params }: Props) {
   const { id } = await params;
   const portfolioId = Number(id);
-  
+
   if (isNaN(portfolioId)) {
     notFound();
   }
 
-  const portfolio = portfolioDb.getById(portfolioId);
-  
+  const portfolio = await portfolioDb.getById(portfolioId);
+
   if (!portfolio) {
     notFound();
   }
@@ -31,4 +31,4 @@ export default async function EditPortfolioPage({ params }: Props) {
       <PortfolioEditForm portfolio={portfolio} />
     </div>
   );
-} 
+}

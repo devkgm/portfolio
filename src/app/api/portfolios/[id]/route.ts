@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { portfolioDb } from "@/db";
-import { saveImage } from "@/utils/imageUpload";
 
 export async function GET(request: Request) {
   try {
@@ -41,14 +40,12 @@ export async function PUT(request: Request) {
     }
 
     const data = await request.json();
-    // 이미지 저장
-    const thumbnailPath = await saveImage(data.thumbnail);
     // 데이터베이스에 저장
     const result = await portfolioDb.update(portfolioId, {
       title: data.title,
       description: data.description,
       githubUrl: data.githubUrl,
-      thumbnail: thumbnailPath,
+      thumbnail: data.thumbnail,
       tags: JSON.stringify(data.tags),
     });
     return NextResponse.json({ success: true, data: result });

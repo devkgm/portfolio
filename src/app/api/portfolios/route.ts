@@ -1,20 +1,16 @@
 import { NextResponse } from "next/server";
 import { portfolioDb } from "@/db";
-import { saveImage } from "@/utils/imageUpload";
 
 export async function POST(request: Request) {
   try {
     const data = await request.json();
-
-    // 이미지 저장
-    const thumbnailPath = await saveImage(data.thumbnail);
 
     // 데이터베이스에 저장
     const result = await portfolioDb.create({
       title: data.title,
       description: data.description,
       githubUrl: data.githubUrl,
-      thumbnail: thumbnailPath,
+      thumbnail: data.thumbnail,
       tags: JSON.stringify(data.tags),
     });
 
