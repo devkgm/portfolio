@@ -15,8 +15,15 @@ export function ImageUploader({
   const [isUploading, setIsUploading] = useState(false);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const maxSize = 4.5 * 1024 * 1024; // 4.5MB Limit
     const file = e.target.files?.[0];
+
     if (!file) {
+      return;
+    }
+    //Vercel 정책으로 이미지 첨부 제한
+    if (file.size > maxSize) {
+      alert("최대 4.5MB 용량의 이미지를 첨부할 수 있습니다.");
       return;
     }
 
