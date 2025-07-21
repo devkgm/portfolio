@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { ImageUploader } from "./ImageUploader";
 import { useRouter } from "next/navigation";
+import { createPortfolio } from "@/utils/api";
+import { CreatePortfolioData } from "@/types/portfolio";
 
 interface PortfolioForm {
   title: string;
@@ -28,23 +30,13 @@ export default function PortfolioEditor() {
     try {
       setIsSubmitting(true);
 
-      const portfolioData = {
+      const portfolioData: CreatePortfolioData = {
         ...data,
         thumbnail,
         tags: data.tags.split(",").map((tag) => tag.trim()),
       };
 
-      const response = await fetch("/api/portfolios", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(portfolioData),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to create portfolio");
-      }
+      await createPortfolio(portfolioData);
 
       reset();
       setThumbnail("");

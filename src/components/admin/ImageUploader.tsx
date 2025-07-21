@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { uploadImage } from "@/utils/api";
 
 interface ImageUploaderProps {
   onImageUpload: (imageUrl: string) => void;
@@ -29,20 +30,8 @@ export function ImageUploader({
 
     setIsUploading(true);
 
-    const formData = new FormData();
-    formData.append("file", file);
-
     try {
-      const response = await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to upload image");
-      }
-
-      const { imageUrl } = await response.json();
+      const { imageUrl } = await uploadImage(file);
 
       setPreview(imageUrl);
       onImageUpload(imageUrl);
