@@ -1,7 +1,9 @@
 import { portfolioDb } from "@/db";
 import PortfolioCard from "./PortfolioCard";
+import { unstable_noStore as noStore } from "next/cache";
 
 export default async function PortfolioList() {
+  noStore();
   const items = await portfolioDb.getAll();
 
   return (
