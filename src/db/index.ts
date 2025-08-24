@@ -1,4 +1,4 @@
-import { supabase } from "@/utils/supabase";
+import { getServerClient } from "@/utils/supabase";
 export interface Portfolio {
   id: number;
   title: string;
@@ -12,7 +12,7 @@ export interface Portfolio {
 
 export const portfolioDb = {
   create: async (data: Omit<Portfolio, "id" | "createdAt" | "updatedAt">) => {
-    const { data: result, error } = await supabase
+    const { data: result, error } = await getServerClient()
       .from("portfolios")
       .insert([{ ...data }])
       .select()
@@ -22,7 +22,7 @@ export const portfolioDb = {
   },
 
   getAll: async () => {
-    const { data, error } = await supabase
+    const { data, error } = await getServerClient()
       .from("portfolios")
       .select("*")
       .order("createdAt", { ascending: false });
@@ -31,7 +31,7 @@ export const portfolioDb = {
   },
 
   getById: async (id: number) => {
-    const { data, error } = await supabase
+    const { data, error } = await getServerClient()
       .from("portfolios")
       .select("*")
       .eq("id", id)
@@ -41,7 +41,7 @@ export const portfolioDb = {
   },
 
   update: async (id: number, data: Partial<Portfolio>) => {
-    const { data: result, error } = await supabase
+    const { data: result, error } = await getServerClient()
       .from("portfolios")
       .update({ ...data, updatedAt: new Date().toISOString() })
       .eq("id", id)
@@ -52,7 +52,10 @@ export const portfolioDb = {
   },
 
   delete: async (id: number) => {
-    const { error } = await supabase.from("portfolios").delete().eq("id", id);
+    const { error } = await getServerClient()
+      .from("portfolios")
+      .delete()
+      .eq("id", id);
     if (error) throw error;
     return { success: true };
   },

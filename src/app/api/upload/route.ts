@@ -1,4 +1,4 @@
-import { supabase } from "@/utils/supabase";
+import { getServerClient } from "@/utils/supabase";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
@@ -11,8 +11,8 @@ export async function POST(request: NextRequest) {
     }
 
     const fileName = `${Date.now()}-${file.name}`;
-    const { data, error } = await supabase.storage
-      .from("thumbnails")
+    const { data, error } = await getServerClient()
+      .storage.from("thumbnails")
       .upload(fileName, file);
 
     if (error) {
@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
 
     const {
       data: { publicUrl },
-    } = supabase.storage.from("thumbnails").getPublicUrl(data.path);
+    } = getServerClient().storage.from("thumbnails").getPublicUrl(data.path);
 
     return NextResponse.json({ imageUrl: publicUrl }, { status: 200 });
   } catch (error) {

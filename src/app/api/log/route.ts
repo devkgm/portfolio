@@ -1,19 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabase } from "@/utils/supabase";
+import { getServerClient } from "@/utils/supabase";
 import { AccessLog } from "@/types/log";
 
 export async function POST(request: NextRequest) {
   try {
     const logData = (await request.json()) as AccessLog;
 
-    const { error } = await supabase.from("access_logs").insert([
-      {
-        path: logData.path,
-        ip: logData.ip,
-        geo: logData.geo,
-        user_agent: logData.userAgent,
-      },
-    ]);
+    const { error } = await getServerClient()
+      .from("access_logs")
+      .insert([
+        {
+          path: logData.path,
+          ip: logData.ip,
+          geo: logData.geo,
+          user_agent: logData.userAgent,
+        },
+      ]);
 
     if (error) {
       console.error("Failed to insert access log into Supabase:", error);
